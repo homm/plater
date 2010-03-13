@@ -17,7 +17,8 @@ class Kohana_Plater extends Kohana_View
 	
 	public function block($name, $content = NULL)
 	{
-		if (array_search($name, $this->_blocks_stack))
+		// Opening block with same name not allowed
+		if (array_search($name, $this->_blocks_stack) !== FALSE)
 		{
 			throw new Kohana_Exception('View :file already collect block :block', array(
 					':file' => $this->_file,
