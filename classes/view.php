@@ -1,6 +1,3 @@
-<?php
+<?php defined('SYSPATH') or die('No direct script access.');
 
-class View extends Kohana_View {}
-=
-===y
-
+class View extends Plater {}
