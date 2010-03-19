@@ -50,3 +50,6 @@ Blocks can be nested:
 You can use any vars to discover which template to extend.
 
 	<?php $this->extend('layouts/'.$extends) ?>
+
+Block name in endblock() method is optional. If it passed, module also check right order of 
+blocks.
