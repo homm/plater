@@ -1,15 +1,15 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 
-class Kohana_Plater extends Kohana_View
+class Plater_Core extends Kohana_View
 {
 	// Array of blocks in current View
 	protected $_blocks = array();
 
 	// Order of blocks
 	protected $_blocks_stack = array();
-	
+
 	protected $_extends = NULL;
-	
+
 	public function extend($file)
 	{
 		$this->_extends = $file;
@@ -56,11 +56,11 @@ class Kohana_Plater extends Kohana_View
 					':block' => $name,
 				));
 		}
-		
+
 		$this->_blocks_stack[] = $name;
-		
+
 		ob_start();
-		
+
 		return empty($this->_blocks[$name]);
 	}
 	
@@ -68,7 +68,7 @@ class Kohana_Plater extends Kohana_View
 	{
 		// Get name of last block in stack
 		$last = array_pop($this->_blocks_stack);
-		
+
 		// If user pas $name, we can check block's order 
 		if ($name AND $name !== $last)
 		{
@@ -77,7 +77,7 @@ class Kohana_Plater extends Kohana_View
 					':given' => $name,
 				));
 		}
-		
+
 		if (empty($this->_blocks[$name]))
 		{
 			// If block not yet present, render current and save it
@@ -87,8 +87,8 @@ class Kohana_Plater extends Kohana_View
 		{
 			// This output overlapped
 			ob_end_clean();
-			
-			// Render previous block_content
+
+			// Render previous block content
 			echo $this->_blocks[$name];
 		}
 	}
@@ -104,7 +104,7 @@ class Kohana_Plater extends Kohana_View
 		{
 			$this->set_filename($file);
 		}
-		
+
 		if ($file === NULL AND empty($this->_file))
 		{
 			throw new Kohana_View_Exception('You must set the file to use within your view before rendering');
@@ -115,26 +115,26 @@ class Kohana_Plater extends Kohana_View
 
 		// First render
 		$result = $this->plater_capture($this->_file, $data);
-		
+
 		$processed = array($this->_file => TRUE);
-		
+
 		while ($this->_extends)
 		{
 			// Find extendable view
 			$this->set_filename($this->_extends);
-			
+
 			$this->_extends = NULL;
-			
+
 			if (isset($processed[$this->_file]))
 			{
 				throw new Kohana_View_Exception('View recursion extend');
 			}
-			
-			$processed[$this->_file] = TRUE;
-			
+
 			$result = $this->plater_capture($this->_file, $data);
+
+			$processed[$this->_file] = TRUE;
 		}
-		
+
 		return $result;
 	}
 }
