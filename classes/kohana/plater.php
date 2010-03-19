@@ -15,6 +15,37 @@ class Kohana_Plater extends Kohana_View
 		$this->_extends = $file;
 	}
 	
+	/*
+	 * Captures the output that is generated when a view is included.
+	 * The view data will be extracted to make local variables. 
+	 * This method repeat View::capture(), but not static.
+	 */
+	protected function plater_capture($kohana_view_filename, array $kohana_view_data)
+	{
+		// Import the view variables to local namespace
+		extract($kohana_view_data, EXTR_SKIP);
+
+		// Capture the view output
+		ob_start();
+
+		try
+		{
+			// Load the view within the current scope
+			include $kohana_view_filename;
+		}
+		catch (Exception $e)
+		{
+			// Delete the output buffer
+			ob_end_clean();
+
+			// Re-throw the exception
+			throw $e;
+		}
+
+		// Get the captured output and close the buffer
+		return ob_get_clean();
+	}
+	
 	public function block($name, $content = NULL)
 	{
 		// Opening block with same name not allowed
@@ -81,12 +112,11 @@ class Kohana_Plater extends Kohana_View
 
 		// Combine local and global data and capture the output
 		$data = $this->_data + View::$_global_data;
-		
-		// Adds pointer to this object, to allow blocking
-		$data['self'] = $this;
 
 		// First render
-		$result = View::capture($this->_file, $data);
+		$result = $this->plater_capture($this->_file, $data);
+		
+		$processed = array($this->_file => TRUE);
 		
 		while ($this->_extends)
 		{
@@ -95,7 +125,14 @@ class Kohana_Plater extends Kohana_View
 			
 			$this->_extends = NULL;
 			
-			$result = View::capture($this->_file, $data);
+			if (isset($processed[$this->_file]))
+			{
+				throw new Kohana_View_Exception('View recursion extend');
+			}
+			
+			$processed[$this->_file] = TRUE;
+			
+			$result = $this->plater_capture($this->_file, $data);
 		}
 		
 		return $result;
